@@ -4,12 +4,12 @@
 	"description": "",
 	"main": "blogpost.js",
 	"scripts": {
-		"test": "nodemon blogpost.js"
+		"dev": "nodemon blogpost.js"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Mir-Rom/blogpost.git"
 	},
-	"author": "Mir_Rom",
+	"author": "Miroshnichenko Roman <rborisovic74@gmail.com>",
 	"license": "ISC"
 }
