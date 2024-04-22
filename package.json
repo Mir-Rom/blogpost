@@ -10,6 +10,7 @@
 		"type": "git",
 		"url": "https://github.com/Mir-Rom/blogpost.git"
 	},
+	"type": "module",
 	"author": "Miroshnichenko Roman <rborisovic74@gmail.com>",
 	"license": "ISC"
 }
