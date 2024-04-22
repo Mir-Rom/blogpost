@@ -1,0 +1,15 @@
+{
+	"name": "blockpost",
+	"version": "1.0.0",
+	"description": "",
+	"main": "blogpost.js",
+	"scripts": {
+		"test": "nodemon blogpost.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Mir-Rom/blogpost.git"
+	},
+	"author": "Mir_Rom",
+	"license": "ISC"
+}
