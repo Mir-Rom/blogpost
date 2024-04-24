@@ -1,16 +1,1 @@
-[
-	{
-		"id": "1",
-		"title": "Hello World",
-		"text": "fjsdklf jdksfj okdsjf okdsjf okdsjf kosdjklf sdjklf jlsk",
-		"image": "/images/a1.png",
-		"tag": "['ab', 'bg', 'gc']"
-	},
-	{
-		"id": "2",
-		"title": "Hello World",
-		"text": "fjsdklf jdksfj okdsjf okdsjf okdsjf kosdjklf sdjklf jlsk",
-		"image": "/images/a1.png",
-		"tag": "['ab', 'bg', 'gc']"
-	}
-]
+[{"title":"Hello World","text":"fjsdklf jdksfj okdsjf okdsjf okdsjf kosdjklf sdjklf jlsk","image":"/images/a1.png","tag":"['ab', 'bg', 'gc']","id":"5a4557a1-f625-47b3-a0f6-f7bf0cdbaf50"}]
