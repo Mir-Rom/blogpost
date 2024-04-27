@@ -160,5 +160,26 @@ app.patch('/edit-post', async (req, res) => {
 	fs.writeFile('posts.json', JSON.stringify(posts))
 	res.json({ code: 0, data: 'Success' })
 })
+app.delete('/remove-post/:id', async (req, res) => {
+	if (
+		req.body.passcode !==
+		'7890b64eedcf03848d6f427d11fb177ca470927320b6d83c8beba0a626d0b399'
+	) {
+		res.json({ code: 1, error: 'wrong passcode' })
+		return
+	}
+	if (!uuidValidate(req.params.id)) {
+		res.json({ code: 1, error: 'invalid id' })
+		return
+	}
+	let posts = await fs.readFile('posts.json', 'utf-8')
+	posts = JSON.parse(posts)
+	const removedPostIndex = posts.findIndex((post) => post.id === req.params.id)
+	posts.splice(removedPostIndex, 1)
+
+	fs.writeFile('posts.json', JSON.stringify(posts)).then(() => {
+		res.json({ code: 0, data: 'Success' })
+	})
+})
 
 app.listen(3000)
