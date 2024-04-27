@@ -26,17 +26,61 @@ app.post('/post', async (req, res) => {
 		res.json({ code: 1, error: 'wrong passcode' })
 		return
 	}
-	if (!req.body) {
-		res.json({ code: 1, error: 'data is not json' })
+	delete req.body.passcode
+	const reqBodyKeys = Object.keys(req.body)
+	console.log(reqBodyKeys)
+	if (reqBodyKeys.length > 5) {
+		res.json({ code: 1, error: 'too many properties' })
+		return
 	}
 
+	if (reqBodyKeys.length < 2) {
+		res.json({ code: 1, error: 'too little properties' })
+		return
+	}
+	const necessaryValidPostKeys = ['title', 'text']
+	if (!reqBodyKeys.every((i) => necessaryValidPostKeys.includes(i))) {
+		res.json({ code: 1, error: 'invalid properties' })
+		return
+	}
+	if (reqBodyKeys.length === 4) {
+		const validPostKeys = ['tags', 'image']
+		if (!reqBodyKeys.some((i) => validPostKeys.includes(i))) {
+			res.json({ code: 1, error: 'invalid properties' })
+			return
+		}
+	}
+	if (reqBodyKeys.length === 5) {
+		const validPostKeys = ['tags', 'image']
+		if (reqBodyKeys.every((i) => validPostKeys.includes(i))) {
+			res.json({ code: 1, error: 'invalid properties' })
+			return
+		}
+	}
+	if (reqBodyKeys.length <= 5 && reqBodyKeys.length >= 4) {
+		if (!(req.body.tags || req.body.image)) {
+			res.json({ code: 1, error: 'invalid image or tags value' })
+			return
+		}
+	}
+	if (!req.body) {
+		res.json({ code: 1, error: 'data is not json' })
+		return
+	}
+	if (!req.body.title) {
+		res.json({ code: 1, error: 'invalid title' })
+		return
+	}
+	if (!req.body.text) {
+		res.json({ code: 1, error: 'invalid text' })
+		return
+	}
 	let posts = await fs.readFile('posts.json', 'utf-8')
 	if (!posts) {
 		posts = []
 	} else posts = JSON.parse(posts)
 
 	req.body.id = uuidv4()
-	delete req.body.passcode
 	posts.push(req.body)
 
 	fs.writeFile('posts.json', JSON.stringify(posts))
