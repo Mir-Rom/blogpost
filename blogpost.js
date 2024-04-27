@@ -1,6 +1,7 @@
 import express from 'express'
 import fs from 'fs/promises'
 import { v4 as uuidv4 } from 'uuid'
+import { validate as uuidValidate } from 'uuid'
 const app = express()
 app.use('/images', express.static('images'))
 app.use(express.json())
@@ -83,6 +84,79 @@ app.post('/post', async (req, res) => {
 	req.body.id = uuidv4()
 	posts.push(req.body)
 
+	fs.writeFile('posts.json', JSON.stringify(posts))
+	res.json({ code: 0, data: 'Success' })
+})
+app.patch('/edit-post', async (req, res) => {
+	if (
+		req.body.passcode !==
+		'7890b64eedcf03848d6f427d11fb177ca470927320b6d83c8beba0a626d0b399'
+	) {
+		res.json({ code: 1, error: 'wrong passcode' })
+		return
+	}
+	delete req.body.passcode
+	let posts = await fs.readFile('posts.json', 'utf-8')
+	if (!posts) {
+		posts = []
+	} else posts = JSON.parse(posts)
+	if (!uuidValidate(req.body.id)) {
+		res.json({ code: 1, error: 'invalid id' })
+		return
+	}
+	if (!posts.find((post) => post.id === req.body.id)) {
+		res.json({ code: 1, error: 'there is no post with such id' })
+		return
+	}
+	const reqBodyKeys = Object.keys(req.body)
+	if (reqBodyKeys.length > 5) {
+		res.json({ code: 1, error: 'too many properties' })
+		return
+	}
+
+	if (reqBodyKeys.length < 3) {
+		res.json({ code: 1, error: 'too little properties' })
+		return
+	}
+	const validPostKeys = ['id', 'title', 'text']
+	if (!reqBodyKeys.every((i) => validPostKeys.includes(i))) {
+		res.json({ code: 1, error: 'invalid properties' })
+		return
+	}
+	if (reqBodyKeys.length === 4) {
+		const validPostKeys = ['tags', 'image']
+		if (!reqBodyKeys.some((i) => validPostKeys.includes(i))) {
+			res.json({ code: 1, error: 'invalid properties' })
+			return
+		}
+	}
+	if (reqBodyKeys.length === 5) {
+		const validPostKeys = ['tags', 'image']
+		if (reqBodyKeys.every((i) => validPostKeys.includes(i))) {
+			res.json({ code: 1, error: 'invalid properties' })
+			return
+		}
+	}
+	if (reqBodyKeys.length <= 5 && reqBodyKeys.length >= 4) {
+		if (!(req.body.tags || req.body.image)) {
+			res.json({ code: 1, error: 'invalid image or tags value' })
+			return
+		}
+	}
+	if (!req.body) {
+		res.json({ code: 1, error: 'data is not json' })
+		return
+	}
+	if (!req.body.title) {
+		res.json({ code: 1, error: 'invalid title' })
+		return
+	}
+	if (!req.body.text) {
+		res.json({ code: 1, error: 'invalid text' })
+		return
+	}
+	const editPost = posts.findIndex((post) => post.id === req.body.id)
+	posts[editPost] = req.body
 	fs.writeFile('posts.json', JSON.stringify(posts))
 	res.json({ code: 0, data: 'Success' })
 })
