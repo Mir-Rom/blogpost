@@ -1,13 +1,17 @@
-export default function Post() {
+type PostProps = {
+    title: string,
+    image: string,
+    text: string,
+    tags: string[]
+}
+
+export default function Post({title, image, text, tags}: PostProps) {
     return <section className="post">
-        <img src="/test.jpg" alt="" />
-        <h1>Post title</h1>
-        <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Repudiandae nesciunt quia recusandae accusamus molestias veniam ipsa voluptatibus illo distinctio eius nemo beatae corrupti est, veritatis mollitia ullam nihil maxime earum?</p>
+        <img src={image} alt="" />
+        <h1>{title}</h1>
+        <p>{text.substring(1, 30) + '...'}</p>
         <ul className="tags">
-            <li>Tag1</li>
-            <li>Tag2</li>
-            <li>Tag3</li>
-            <li>Tag4</li>
+            { tags.map(tag => <li>{tag}</li>) }
         </ul>
     </section>
 }
