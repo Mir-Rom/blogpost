@@ -7,11 +7,6 @@ const __dirname = import.meta.dirname
 
 const app = express()
 
-app.use((req, res, next) => {
-	console.log(req.url)
-	next()
-})
-
 app.use(express.static(path.resolve(__dirname, 'client/dist')))
 app.use('/images', express.static('images'))
 app.use(express.json())

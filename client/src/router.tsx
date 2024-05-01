@@ -1,4 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
+import Home from "./routes/Home";
+import Posts from "./routes/Posts";
 import Layout from "./layout";
 
 export default createBrowserRouter([
@@ -8,11 +10,11 @@ export default createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <h1>Main Page</h1>
+                element: <Home />
             },
             {
                 path: '/posts',
-                element: <h1>Posts</h1>
+                element: <Posts />
             }
         ]
     }
