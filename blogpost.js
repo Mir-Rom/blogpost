@@ -1,18 +1,26 @@
 import express from 'express'
+import path from 'path'
 import fs from 'fs/promises'
 import { v4 as uuidv4 } from 'uuid'
 import { validate as uuidValidate } from 'uuid'
+const __dirname = import.meta.dirname
+
 const app = express()
 
-app.use('/', express.static('client/dist'))
+app.use((req, res, next) => {
+	console.log(req.url)
+	next()
+})
+
+app.use(express.static(path.resolve(__dirname, 'client/dist')))
 app.use('/images', express.static('images'))
 app.use(express.json())
 
-app.get('/posts/', async (req, res) => {
+app.get('/api/posts/', async (req, res) => {
 	const data = JSON.parse(await fs.readFile('posts.json', 'utf8'))
 	res.json({ code: 0, data })
 })
-app.get('/posts/:id', async (req, res) => {
+app.get('/api/posts/:id', async (req, res) => {
 	const posts = JSON.parse(await fs.readFile('posts.json', 'utf-8'))
 	const data = posts.find((post) => post.id === req.params.id)
 
@@ -22,7 +30,7 @@ app.get('/posts/:id', async (req, res) => {
 	}
 	res.json({ code: 0, data })
 })
-app.post('/post', async (req, res) => {
+app.post('/api/post', async (req, res) => {
 	if (
 		req.body.passcode !==
 		'7890b64eedcf03848d6f427d11fb177ca470927320b6d83c8beba0a626d0b399'
@@ -90,7 +98,7 @@ app.post('/post', async (req, res) => {
 	fs.writeFile('posts.json', JSON.stringify(posts))
 	res.json({ code: 0, data: 'Success' })
 })
-app.patch('/edit-post', async (req, res) => {
+app.patch('/api/edit-post', async (req, res) => {
 	if (
 		req.body.passcode !==
 		'7890b64eedcf03848d6f427d11fb177ca470927320b6d83c8beba0a626d0b399'
@@ -163,7 +171,7 @@ app.patch('/edit-post', async (req, res) => {
 	fs.writeFile('posts.json', JSON.stringify(posts))
 	res.json({ code: 0, data: 'Success' })
 })
-app.delete('/remove-post/:id', async (req, res) => {
+app.delete('/api/remove-post/:id', async (req, res) => {
 	if (
 		req.body.passcode !==
 		'7890b64eedcf03848d6f427d11fb177ca470927320b6d83c8beba0a626d0b399'
@@ -184,5 +192,10 @@ app.delete('/remove-post/:id', async (req, res) => {
 		res.json({ code: 0, data: 'Success' })
 	})
 })
+
+app.get('*', (req, res) => {
+	res.sendFile(path.resolve(__dirname, 'client/dist', 'index.html'))
+})
+
 
 app.listen(3000)
