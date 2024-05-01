@@ -3,8 +3,11 @@ import fs from 'fs/promises'
 import { v4 as uuidv4 } from 'uuid'
 import { validate as uuidValidate } from 'uuid'
 const app = express()
+
+app.use('/', express.static('client/dist'))
 app.use('/images', express.static('images'))
 app.use(express.json())
+
 app.get('/posts/', async (req, res) => {
 	const data = JSON.parse(await fs.readFile('posts.json', 'utf8'))
 	res.json({ code: 0, data })
