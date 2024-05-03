@@ -12,7 +12,7 @@ function getStatusCode(boolean = true) {
 
 const app = express()
 
-app.use(express.static(path.resolve(__dirname, 'client/dist')))
+app.use(express.static('client/dist'))
 app.use('/images', express.static('images'))
 app.use(express.json())
 
@@ -101,7 +101,7 @@ app.delete('/api/remove-post/:id', async (req, res) => {
 })
 
 app.get('*', (req, res) => {
-	res.sendFile(path.resolve(__dirname, 'client/dist', 'index.html'))
+	res.sendFile('client/dist', 'index.html')
 })
 
 app.listen(3000)
