@@ -5,7 +5,7 @@ const postValidation = {
 	title: Joi.string().required(),
 	text: Joi.string().required(),
 	image: Joi.string().allow('').required(),
-	tags: Joi.array().required(),
+	tags: Joi.array().items(Joi.string()).required(),
 }
 const passcodeValidation = {
 	passcode: Joi.string()
