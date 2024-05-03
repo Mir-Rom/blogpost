@@ -1,3 +1,3 @@
 import axios from "axios"
 
-export default (url) => axios.get(url).then(res => res.data)
+export default (url: string) => axios.get(url).then(res => res.data)

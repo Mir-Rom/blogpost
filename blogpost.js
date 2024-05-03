@@ -22,7 +22,7 @@ app.get('/api/posts/', async (req, res) => {
 	const data = JSON.parse(posts)
 	res.json({ code: 0, data })
 })
-app.get('/posts/:id', async (req, res) => {
+app.get('/api/posts/:id', async (req, res) => {
 	const data = posts.find((post) => post.id === req.params.id)
 
 	if (!data) {
@@ -32,7 +32,7 @@ app.get('/posts/:id', async (req, res) => {
 	res.json({ code: 0, data })
 })
 
-app.post('/post', async (req, res) => {
+app.post('/api/post', async (req, res) => {
 	const { error } = validatePost(req.body)
 	if (error) {
 		res.json({ code: getStatusCode(false), message: error.message })
@@ -48,7 +48,7 @@ app.post('/post', async (req, res) => {
 	fs.writeFile('posts.json', JSON.stringify(postsParse))
 	res.json({ code: 0, data: 'Success' })
 })
-app.patch('/edit-post', async (req, res) => {
+app.patch('/api/edit-post', async (req, res) => {
 	const { error } = validateEdit(req.body)
 	if (error) {
 		res.json({ code: getStatusCode(false), message: error.message })

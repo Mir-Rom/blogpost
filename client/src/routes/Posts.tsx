@@ -2,6 +2,13 @@ import Post from "../components/Post";
 import useSWR from "swr";
 import fetcher from "../fetcher";
 
+type Post = {
+    title: string,
+    text: string,
+    tags?: string | string[],
+    image?: string
+}
+
 export default function Posts() {
     const { data, error, isLoading } = useSWR('/api/posts', fetcher)
 
@@ -20,7 +27,7 @@ export default function Posts() {
     return <div>
         <div className="posts-grid">
             {
-                data.data.map(post => <Post title={post.title} text={post.text} tags={post.tags} image={post.image} />)
+                data.data.map((post: Post) => <Post title={post.title} text={post.text} tags={post.tags} image={post.image} />)
             }
         </div>
     </div>
