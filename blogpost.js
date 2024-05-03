@@ -2,9 +2,9 @@ import express from 'express'
 import path from 'path'
 import fs from 'fs/promises'
 import { v4 as uuidv4 } from 'uuid'
-const __dirname = import.meta.url
+const __dirname = import.meta.dirname
 import { validatePost, validateEdit, validateRemove } from './validator.js'
-console.log(__dirname)
+
 function getStatusCode(boolean = true) {
 	if (boolean) return 0
 	else return 1
@@ -101,7 +101,8 @@ app.delete('/api/remove-post/:id', async (req, res) => {
 })
 
 app.get('*', (req, res) => {
-	res.sendFile('client/dist', 'index.html')
+	console.log('!!!!!!', path.join(__dirname, 'client/dist/index.html'))
+	res.sendFile(path.join(__dirname, 'client/dist/index.html'))
 })
 
 app.listen(3000)
