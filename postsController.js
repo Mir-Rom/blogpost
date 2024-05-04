@@ -9,10 +9,10 @@ export default {
 		try {
 			let posts = await fs.readFile(paths.postsFile, charset)
 			posts = JSON.parse(posts)
+			return posts
 		} catch {
 			throw new Error(errorMessages.getPostsError)
 		}
-		return posts
 	},
 	async getPost(postId) {
 		try {
@@ -27,7 +27,7 @@ export default {
 		try {
 			const id = uuidv4()
 			const posts = await this.getPosts()
-			posts.push({ ...post, id })
+			posts.push({ ...post, id, image: '/images/' + post.image })
 			fs.writeFile(paths.postsFile, JSON.stringify(posts))
 		} catch {
 			throw new Error(errorMessages.getPostError)

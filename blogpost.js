@@ -9,6 +9,17 @@ import requests from './requestUrls.js'
 import errorMessages from './errorMessages.js'
 import { SUCCESS_MESSAGE, ERROR_CODE } from './constants.js'
 import paths from './paths.js'
+import multer from 'multer'
+const storage = multer.diskStorage({
+	filename: function (req, file, cb) {
+		cb(null, Date.now() + path.extname(file.originalname))
+	},
+	destination: function (req, file, cb) {
+		cb(null, 'images/')
+	},
+})
+
+const upload = multer({ dest: 'images/', storage })
 
 const __dirname = import.meta.dirname
 const app = express()
@@ -36,14 +47,15 @@ app.get(requests.getPost, async (req, res) => {
 	}
 })
 
-app.post(requests.publishPost, async (req, res) => {
+app.post(requests.publishPost, upload.single('image'), async (req, res) => {
 	try {
-		const { error } = validatePost(req.body)
-		if (error) {
-			res.json(createResponse(error.message, ERROR_CODE))
-			return
-		}
-		const newPost = new Post(req.body)
+		//const { error } = validatePost(req.body)
+		//if (error) {
+		//	res.json(createResponse(error.message, ERROR_CODE))
+		//	return
+		//}
+
+		const newPost = new Post({ ...req.body, image: req.file.filename })
 		postsController.createPost(newPost)
 
 		res.json(createResponse(SUCCESS_MESSAGE))
