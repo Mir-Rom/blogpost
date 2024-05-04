@@ -1,14 +1,16 @@
 import express from 'express'
 import path from 'path'
-import fs from 'fs/promises'
 import { v4 as uuidv4 } from 'uuid'
 const __dirname = import.meta.dirname
 import { validatePost, validateEdit, validateRemove } from './validator.js'
-
-function getStatusCode(boolean = true) {
-	if (boolean) return 0
-	else return 1
-}
+import {
+	editPost,
+	Post,
+	getStatusCode,
+	createPost,
+	getPosts,
+	removePost,
+} from './global-functions.js'
 
 const app = express()
 
@@ -16,93 +18,81 @@ app.use(express.static('client/dist'))
 app.use('/images', express.static('images'))
 app.use(express.json())
 
-let posts = await fs.readFile('posts.json', 'utf-8')
-
 app.get('/api/posts/', async (req, res) => {
-	const data = JSON.parse(posts)
-	res.json({ code: 0, data })
+	res.json({ code: 0, data: await getPosts() })
 })
-app.get('/api/posts/:id', async (req, res) => {
-	const data = posts.find((post) => post.id === req.params.id)
 
-	if (!data) {
+app.get('/api/posts/:id', async (req, res) => {
+	const posts = await getPosts()
+	const post = await posts.find((post) => post.id === req.params.id)
+	console.log(post)
+	if (!post) {
 		res.json({ code: 1, error: 'there is no post with such id' })
 		return
 	}
-	res.json({ code: 0, data })
+	res.json({ code: 0, data: post })
+})
+
+app.get('*', (req, res) => {
+	res.sendFile(path.join(__dirname, 'client/dist/index.html'))
 })
 
 app.post('/api/post', async (req, res) => {
 	const { error } = validatePost(req.body)
 	if (error) {
-		res.json({ code: getStatusCode(false), message: error.message })
+		res.json({ code: getStatusCode(false), data: error.message })
 		return
 	}
-	let postsParse
-	if (!posts) {
-		postsParse = []
-	} else postsParse = JSON.parse(posts)
-	delete req.body.passcode
+
 	req.body.id = uuidv4()
-	postsParse.push(req.body)
-	fs.writeFile('posts.json', JSON.stringify(postsParse))
+	createPost(new Post(req.body))
+
 	res.json({ code: 0, data: 'Success' })
 })
+
 app.patch('/api/edit-post', async (req, res) => {
 	const { error } = validateEdit(req.body)
 	if (error) {
-		res.json({ code: getStatusCode(false), message: error.message })
+		res.json({ code: getStatusCode(false), data: error.message })
 		return
 	}
-	let postsParse
-	if (!posts) {
-		postsParse = []
-	} else postsParse = JSON.parse(posts)
-	const editPost = postsParse.findIndex((post) => post.id === req.body.id)
-	console.log(editPost)
-	if (editPost === -1) {
+
+	const posts = await getPosts()
+	const postId = posts.findIndex((post) => post.id === req.body.id)
+	if (postId === -1) {
 		res.json({
 			code: getStatusCode(false),
 			data: 'there is no post with such id',
 		})
 		return
 	}
-	postsParse[editPost] = req.body
-	fs.writeFile('posts.json', JSON.stringify(postsParse))
+
+	editPost(postId, await createPost(new Post(req.body)))
+
 	res.json({ code: 0, data: 'Success' })
 })
+
 app.delete('/api/remove-post/:id', async (req, res) => {
 	const { error } = validateRemove({
 		passcode: req.body.passcode,
 		id: req.params.id,
 	})
 	if (error) {
-		res.json({ code: getStatusCode(false), message: error.message })
+		res.json({ code: getStatusCode(false), data: error.message })
 		return
 	}
-	let postsParse
-	if (!posts) {
-		postsParse = []
-	} else postsParse = JSON.parse(posts)
 
-	if (!postsParse.find((post) => post.id === req.params.id)) {
+	const posts = await getPosts()
+	if (!posts.find((post) => post.id === req.params.id)) {
 		res.json({
 			code: getStatusCode(false),
 			data: 'there is no post with such id',
 		})
 		return
 	}
-	const filteredposts = await postsParse.filter(
-		(post) => post.id !== req.params.id
-	)
-	fs.writeFile('posts.json', JSON.stringify(filteredposts)).then(() => {
-		res.json({ code: 0, data: 'Success' })
-	})
-})
+	removePost(req.params.id)
 
-app.get('*', (req, res) => {
-	console.log('!!!!!!', path.join(__dirname, 'client/dist/index.html'))
-	res.sendFile(path.join(__dirname, 'client/dist/index.html'))
+	res.json({ code: 0, data: 'Success' })
 })
 
 app.listen(3000)
