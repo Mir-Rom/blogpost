@@ -1,98 +1,96 @@
 import express from 'express'
 import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
-const __dirname = import.meta.dirname
-import { validatePost, validateEdit, validateRemove } from './validator.js'
-import {
-	editPost,
-	Post,
-	getStatusCode,
-	createPost,
-	getPosts,
-	removePost,
-} from './global-functions.js'
 
+import { validatePost, validateEdit, validateRemove } from './validator.js'
+import postsController from './postsController.js'
+import { createResponse } from './utils.js'
+import Post from './Post.js'
+import requests from './requestUrls.js'
+import errorMessages from './errorMessages.js'
+import { SUCCESS_MESSAGE, ERROR_CODE } from './constants.js'
+import paths from './paths.js'
+
+const __dirname = import.meta.dirname
 const app = express()
 
-app.use(express.static('client/dist'))
-app.use('/images', express.static('images'))
+app.use(express.static(paths.clientBuildDirectory))
+app.use(requests.images, express.static(paths.imagesDirectory))
 app.use(express.json())
 
-app.get('/api/posts/', async (req, res) => {
-	res.json({ code: 0, data: await getPosts() })
+app.get(requests.getPosts, async (req, res) => {
+	try {
+		const posts = await postsController.getPosts()
+		res.json(createResponse(posts))
+	} catch {
+		res.json(createResponse(errorMessages.internalError, ERROR_CODE))
+	}
 })
 
-app.get('/api/posts/:id', async (req, res) => {
-	const posts = await getPosts()
-	const post = await posts.find((post) => post.id === req.params.id)
-	console.log(post)
-	if (!post) {
-		res.json({ code: 1, error: 'there is no post with such id' })
-		return
+app.get(requests.getPost, async (req, res) => {
+	try {
+		const response = getPost(req.params.id)
+		const post = new Post(response)
+		res.json(createResponse(post))
+	} catch {
+		res.json(createResponse(errorMessages.internalError, ERROR_CODE))
 	}
-	res.json({ code: 0, data: post })
+})
+
+app.post(requests.publishPost, async (req, res) => {
+	try {
+		const { error } = validatePost(req.body)
+		if (error) {
+			res.json(createResponse(error.message, ERROR_CODE))
+			return
+		}
+		const newPost = new Post(req.body)
+		postsController.createPost(newPost)
+
+		res.json(createResponse(SUCCESS_MESSAGE))
+	} catch {
+		res.json(createResponse(errorMessages.internalError, ERROR_CODE))
+	}
+})
+
+app.patch(requests.editPost, async (req, res) => {
+	try {
+		const { error } = validateEdit(req.body)
+		if (error) {
+			res.json(createResponse(error.message, ERROR_CODE))
+			return
+		}
+
+		const postId = req.body.id
+		postsController.editPost(postId, req.body)
+
+		res.json(createResponse(SUCCESS_MESSAGE))
+	} catch {
+		res.json(createResponse(errorMessages.internalError, ERROR_CODE))
+	}
+})
+
+app.delete(requests.removePost, async (req, res) => {
+	try {
+		const { error } = validateRemove({
+			passcode: req.body.passcode,
+			id: req.params.id,
+		})
+		if (error) {
+			res.json(createResponse(error.message, ERROR_CODE))
+			return
+		}
+
+		const postId = req.params.id
+		postsController.removePost(postId)
+
+		res.json(createResponse(SUCCESS_MESSAGE))
+	} catch {
+		res.json(createResponse(errorMessages.internalError, ERROR_CODE))
+	}
 })
 
 app.get('*', (req, res) => {
-	res.sendFile(path.join(__dirname, 'client/dist/index.html'))
-})
-
-app.post('/api/post', async (req, res) => {
-	const { error } = validatePost(req.body)
-	if (error) {
-		res.json({ code: getStatusCode(false), data: error.message })
-		return
-	}
-
-	req.body.id = uuidv4()
-	createPost(new Post(req.body))
-
-	res.json({ code: 0, data: 'Success' })
-})
-
-app.patch('/api/edit-post', async (req, res) => {
-	const { error } = validateEdit(req.body)
-	if (error) {
-		res.json({ code: getStatusCode(false), data: error.message })
-		return
-	}
-
-	const posts = await getPosts()
-	const postId = posts.findIndex((post) => post.id === req.body.id)
-	if (postId === -1) {
-		res.json({
-			code: getStatusCode(false),
-			data: 'there is no post with such id',
-		})
-		return
-	}
-
-	editPost(postId, await createPost(new Post(req.body)))
-
-	res.json({ code: 0, data: 'Success' })
-})
-
-app.delete('/api/remove-post/:id', async (req, res) => {
-	const { error } = validateRemove({
-		passcode: req.body.passcode,
-		id: req.params.id,
-	})
-	if (error) {
-		res.json({ code: getStatusCode(false), data: error.message })
-		return
-	}
-
-	const posts = await getPosts()
-	if (!posts.find((post) => post.id === req.params.id)) {
-		res.json({
-			code: getStatusCode(false),
-			data: 'there is no post with such id',
-		})
-		return
-	}
-	removePost(req.params.id)
-
-	res.json({ code: 0, data: 'Success' })
+	res.sendFile(path.join(__dirname, paths.clientIndexFile))
 })
 
 app.listen(3000)

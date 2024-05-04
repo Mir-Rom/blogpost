@@ -1,4 +1,8 @@
 import Joi from 'joi'
+import errorMessages from './errorMessages.js'
+import dotenv from 'dotenv'
+dotenv.config()
+
 const validator = (schema) => (payload) => schema.validate(payload)
 
 const postValidation = {
@@ -10,8 +14,8 @@ const postValidation = {
 const passcodeValidation = {
 	passcode: Joi.string()
 		.required()
-		.valid('7890b64eedcf03848d6f427d11fb177ca470927320b6d83c8beba0a626d0b399')
-		.messages({ 'any.invalid': 'wrong passcode' }),
+		.valid(process.env.PASSCODE)
+		.messages({ 'any.invalid': errorMessages.wrongPasscode }),
 }
 
 const idValidation = { id: Joi.string().required().guid() }
