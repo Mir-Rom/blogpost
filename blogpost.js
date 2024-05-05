@@ -24,7 +24,7 @@ const upload = multer({ dest: 'images/', storage })
 const __dirname = import.meta.dirname
 const app = express()
 
-app.use(express.static(paths.clientBuildDirectory))
+app.use(express.static(path.resolve(paths.clientBuildDirectory)))
 app.use(requests.images, express.static(paths.imagesDirectory))
 app.use(express.json())
 
@@ -102,7 +102,7 @@ app.delete(requests.removePost, async (req, res) => {
 })
 
 app.get('*', (req, res) => {
-	res.sendFile(path.join(__dirname, paths.clientIndexFile))
+	res.sendFile(path.resolve(paths.clientBuildDirectory, paths.clientIndexFile))
 })
 
 app.listen(3000)

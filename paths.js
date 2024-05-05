@@ -1,11 +1,10 @@
 import path from 'path'
 
 const paths = {
-	clientBuildDirectory: path.join('client', 'dist'),
+	clientBuildDirectory: 'client/dist',
+	clientIndexFile: 'index.html',
 	imagesDirectory: 'images',
 	postsFile: 'posts.json',
 }
-
-paths.clientIndexFile = path.join(paths.clientBuildDirectory, 'index.html')
 
 export default paths
