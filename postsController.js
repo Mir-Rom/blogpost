@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import paths from './paths.js'
 import errorMessages from './errorMessages.js'
 import { charset } from './constants.js'
-
+import { pool as db } from './db.js'
 export default {
 	async getPosts() {
 		try {
@@ -25,10 +25,10 @@ export default {
 	},
 	async createPost(post) {
 		try {
-			const id = uuidv4()
-			const posts = await this.getPosts()
-			posts.push({ ...post, id, image: '/images/' + post.image })
-			fs.writeFile(paths.postsFile, JSON.stringify(posts))
+			db.query(
+				'INSERT INTO posts (post_title, post_text, post_tags, post_image_path) VALUES($1,$2,$3,$4) RETURNING *',
+				[post.title, post.text, post.tags, '/images/' + post.image]
+			)
 		} catch {
 			throw new Error(errorMessages.getPostError)
 		}

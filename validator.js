@@ -18,7 +18,7 @@ const passcodeValidation = {
 		.messages({ 'any.invalid': errorMessages.wrongPasscode }),
 }
 
-const idValidation = { id: Joi.string().required().guid() }
+const idValidation = { id: Joi.number().positive().required() }
 const postSchema = Joi.object(postValidation).append(passcodeValidation)
 const editSchema = Joi.object(postValidation)
 	.append(idValidation)

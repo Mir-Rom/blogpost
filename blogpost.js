@@ -49,11 +49,12 @@ app.get(requests.getPost, async (req, res) => {
 
 app.post(requests.publishPost, upload.single('image'), async (req, res) => {
 	try {
-		//const { error } = validatePost(req.body)
-		//if (error) {
-		//	res.json(createResponse(error.message, ERROR_CODE))
-		//	return
-		//}
+		req.body.tags = JSON.parse(req.body.tags)
+		const { error } = validatePost({ ...req.body, image: req.file.filename })
+		if (error) {
+			res.json(createResponse(error.message, ERROR_CODE))
+			return
+		}
 
 		const newPost = new Post({ ...req.body, image: req.file.filename })
 		postsController.createPost(newPost)
