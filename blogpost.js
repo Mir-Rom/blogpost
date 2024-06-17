@@ -21,7 +21,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ dest: 'images/', storage })
 
-const __dirname = import.meta.dirname
 const app = express()
 
 app.use(express.static(path.resolve(paths.clientBuildDirectory)))
@@ -39,8 +38,8 @@ app.get(requests.getPosts, async (req, res) => {
 
 app.get(requests.getPost, async (req, res) => {
 	try {
-		const response = getPost(req.params.id)
-		const post = new Post(response)
+		const response = postsController.getPost(req.params.id)
+		const post = new Post(await response)
 		res.json(createResponse(post))
 	} catch {
 		res.json(createResponse(errorMessages.internalError, ERROR_CODE))
@@ -49,7 +48,6 @@ app.get(requests.getPost, async (req, res) => {
 
 app.post(requests.publishPost, upload.single('image'), async (req, res) => {
 	try {
-		req.body.tags = JSON.parse(req.body.tags)
 		const { error } = validatePost({ ...req.body, image: req.file.filename })
 		if (error) {
 			res.json(createResponse(error.message, ERROR_CODE))
@@ -65,16 +63,18 @@ app.post(requests.publishPost, upload.single('image'), async (req, res) => {
 	}
 })
 
-app.patch(requests.editPost, async (req, res) => {
+app.patch(requests.editPost, upload.single('image'), async (req, res) => {
 	try {
-		const { error } = validateEdit(req.body)
-		if (error) {
-			res.json(createResponse(error.message, ERROR_CODE))
-			return
+		try {
+			await validateEdit({
+				...req.body,
+				image: req.file.filename,
+			})
+		} catch {
+			res.json(createResponse(errorMessages.validationError, ERROR_CODE))
 		}
 
-		const postId = req.body.id
-		postsController.editPost(postId, req.body)
+		postsController.editPost({ ...req.body, image: req.file.filename })
 
 		res.json(createResponse(SUCCESS_MESSAGE))
 	} catch {
@@ -84,16 +84,15 @@ app.patch(requests.editPost, async (req, res) => {
 
 app.delete(requests.removePost, async (req, res) => {
 	try {
-		const { error } = validateRemove({
-			passcode: req.body.passcode,
-			id: req.params.id,
-		})
-		if (error) {
-			res.json(createResponse(error.message, ERROR_CODE))
-			return
-		}
-
 		const postId = req.params.id
+		try {
+			await validateRemove({
+				passcode: req.body.passcode,
+				id: postId,
+			})
+		} catch {
+			res.json(createResponse(errorMessages.validationError, ERROR_CODE))
+		}
 		postsController.removePost(postId)
 
 		res.json(createResponse(SUCCESS_MESSAGE))
